@@ -13,7 +13,7 @@
 
         public const Int32 WM_USER_SIMCONNECT = 0x0402;
         private const UInt32 TUG_ANGLE = 4294967295;
-
+        private const Int32 MOBI_FLIGHT_INDEX = 1000;
         private SimConnect m_oSimConnect = null;
 
         private Plugin pluginForKey;
@@ -77,7 +77,7 @@
             THROTTLE_SET,
             KEY_TUG_HEADING,
             TOGGLE_FLIGHT_DIRECTOR,
-            AP_FLIGHT_LEVEL_CHANGE,
+            FLIGHT_LEVEL_CHANGE,
             AP_APR_HOLD,
             AP_LOC_HOLD,
             BRAKES,
@@ -103,7 +103,88 @@
             NAV2_RADIO_SWAP,
             NAV1_STBY_SET_HZ,
             NAV2_STBY_SET_HZ,
-        };
+
+            // MobiFlight - these events need prefix "MobiFlight."
+            AS1000_PFD_SOFTKEYS_1 = MOBI_FLIGHT_INDEX,
+            AS1000_PFD_SOFTKEYS_2,
+            AS1000_PFD_SOFTKEYS_3,
+            AS1000_PFD_SOFTKEYS_4,
+            AS1000_PFD_SOFTKEYS_5,
+            AS1000_PFD_SOFTKEYS_6,
+            AS1000_PFD_SOFTKEYS_7,
+            AS1000_PFD_SOFTKEYS_8,
+            AS1000_PFD_SOFTKEYS_9,
+            AS1000_PFD_SOFTKEYS_10,
+            AS1000_PFD_SOFTKEYS_11,
+            AS1000_PFD_SOFTKEYS_12,
+
+            AS1000_PFD_CRS_INC,
+            AS1000_PFD_CRS_DEC,
+            AS1000_PFD_CRS_PUSH,
+
+            AS1000_PFD_RANGE_INC,
+            AS1000_PFD_RANGE_DEC,
+
+            AS1000_PFD_JOYSTICK_RIGHT,
+            AS1000_PFD_JOYSTICK_LEFT,
+            AS1000_PFD_JOYSTICK_UP,
+            AS1000_PFD_JOYSTICK_DOWN,
+            AS1000_PFD_JOYSTICK_PUSH,
+
+            AS1000_PFD_DIRECTTO,
+            AS1000_PFD_ENT_Push,
+            AS1000_PFD_CLR_Long,
+            AS1000_PFD_CLR,
+            AS1000_PFD_MENU_Push,
+            AS1000_PFD_FPL_Push,
+            AS1000_PFD_PROC_Push,
+
+            AS1000_PFD_FMS_Upper_INC,
+            AS1000_PFD_FMS_Upper_DEC,
+            AS1000_PFD_FMS_Upper_PUSH,
+            AS1000_PFD_FMS_Lower_INC,
+            AS1000_PFD_FMS_Lower_DEC,
+
+            AS1000_MFD_SOFTKEYS_1,
+            AS1000_MFD_SOFTKEYS_2,
+            AS1000_MFD_SOFTKEYS_3,
+            AS1000_MFD_SOFTKEYS_4,
+            AS1000_MFD_SOFTKEYS_5,
+            AS1000_MFD_SOFTKEYS_6,
+            AS1000_MFD_SOFTKEYS_7,
+            AS1000_MFD_SOFTKEYS_8,
+            AS1000_MFD_SOFTKEYS_9,
+            AS1000_MFD_SOFTKEYS_10,
+            AS1000_MFD_SOFTKEYS_11,
+            AS1000_MFD_SOFTKEYS_12,
+
+            AS1000_MFD_CRS_INC,
+            AS1000_MFD_CRS_DEC,
+            AS1000_MFD_CRS_PUSH,
+
+            AS1000_MFD_RANGE_INC,
+            AS1000_MFD_RANGE_DEC,
+
+            AS1000_MFD_JOYSTICK_RIGHT,
+            AS1000_MFD_JOYSTICK_LEFT,
+            AS1000_MFD_JOYSTICK_UP,
+            AS1000_MFD_JOYSTICK_DOWN,
+            AS1000_MFD_JOYSTICK_PUSH,
+
+            AS1000_MFD_DIRECTTO,
+            AS1000_MFD_ENT_Push,
+            AS1000_MFD_CLR_Long,
+            AS1000_MFD_CLR,
+            AS1000_MFD_MENU_Push,
+            AS1000_MFD_FPL_Push,
+            AS1000_MFD_PROC_Push,
+
+            AS1000_MFD_FMS_Upper_INC,
+            AS1000_MFD_FMS_Upper_DEC,
+            AS1000_MFD_FMS_Upper_PUSH,
+            AS1000_MFD_FMS_Lower_INC,
+            AS1000_MFD_FMS_Lower_DEC,
+        }
         private enum DEFINITIONS
         {
             Readers,
@@ -225,9 +306,13 @@
             public Int64 NAV1StbyFreq;
             public Int64 NAV2StbyFreq;
 
+            public Int64 gpsOBS;
+            public Int64 NAV1OBS;
+            public Int64 NAV2OBS;
+
         }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         private struct Writers
         {
             public Int64 mixtureE1;
@@ -464,6 +549,11 @@
             MsfsData.Instance.bindings[BindingKeys.NAV2_AVAILABLE].SetMsfsValue(reader.NAV2Available);
             MsfsData.Instance.bindings[BindingKeys.NAV2_STBY_FREQUENCY].SetMsfsValue(reader.NAV2StbyFreq);
 
+            MsfsData.Instance.bindings[BindingKeys.GPS_OBS].SetMsfsValue(reader.gpsOBS);
+            MsfsData.Instance.bindings[BindingKeys.NAV1_OBS].SetMsfsValue(reader.NAV1OBS);
+            MsfsData.Instance.bindings[BindingKeys.NAV2_OBS].SetMsfsValue(reader.NAV2OBS);
+
+
             this.SendEvent(EVENTS.AILERON_TRIM_SET, MsfsData.Instance.bindings[BindingKeys.AILERON_TRIM]);
             this.SendEvent(EVENTS.AP_ALT_VAR_SET_ENGLISH, MsfsData.Instance.bindings[BindingKeys.AP_ALT]);
             this.SendEvent(EVENTS.AP_ALT_VAR_SET_ENGLISH, MsfsData.Instance.bindings[BindingKeys.AP_ALT_INPUT]);
@@ -557,7 +647,7 @@
             this.SendEvent(EVENTS.AP_N1_HOLD, MsfsData.Instance.bindings[BindingKeys.AP_THROTTLE_SWITCH_AL_FOLDER]);
             this.SendEvent(EVENTS.AP_PANEL_VS_HOLD, MsfsData.Instance.bindings[BindingKeys.AP_VSPEED_SWITCH_AL_FOLDER]);
             this.SendEvent(EVENTS.TOGGLE_FLIGHT_DIRECTOR, MsfsData.Instance.bindings[BindingKeys.AP_FD_SWITCH_AL_FOLDER]);
-            this.SendEvent(EVENTS.AP_FLIGHT_LEVEL_CHANGE, MsfsData.Instance.bindings[BindingKeys.AP_FLC_SWITCH_AL_FOLDER]);
+            this.SendEvent(EVENTS.FLIGHT_LEVEL_CHANGE, MsfsData.Instance.bindings[BindingKeys.AP_FLC_SWITCH_AL_FOLDER]);
             this.SendEvent(EVENTS.AP_APR_HOLD, MsfsData.Instance.bindings[BindingKeys.AP_APP_SWITCH_AL_FOLDER]);
             this.SendEvent(EVENTS.AP_LOC_HOLD, MsfsData.Instance.bindings[BindingKeys.AP_LOC_SWITCH_AL_FOLDER]);
             this.SendEvent(EVENTS.YAW_DAMPER_TOGGLE, MsfsData.Instance.bindings[BindingKeys.AP_YAW_DAMPER_AL_FOLDER]);
@@ -575,6 +665,81 @@
             this.SendEvent(EVENTS.NAV2_STBY_SET_HZ, MsfsData.Instance.bindings[BindingKeys.NAV2_STBY_FREQUENCY]);
             this.SendEvent(EVENTS.NAV1_RADIO_SWAP, MsfsData.Instance.bindings[BindingKeys.NAV1_RADIO_SWAP]);
             this.SendEvent(EVENTS.NAV2_RADIO_SWAP, MsfsData.Instance.bindings[BindingKeys.NAV2_RADIO_SWAP]);
+
+            //MobiFlight
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_1, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_1]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_2, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_2]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_3, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_3]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_4, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_4]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_5, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_5]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_6, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_6]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_7, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_7]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_8, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_8]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_9, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_9]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_10, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_10]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_11, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_11]);
+            this.SendEvent(EVENTS.AS1000_PFD_SOFTKEYS_12, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_SOFTKEYS_12]);
+
+            this.SendEvent(EVENTS.AS1000_PFD_CRS_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CRS_INC]);
+            this.SendEvent(EVENTS.AS1000_PFD_CRS_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CRS_DEC]);
+            this.SendEvent(EVENTS.AS1000_PFD_CRS_PUSH, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CRS_PUSH]);
+
+            this.SendEvent(EVENTS.AS1000_PFD_RANGE_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_RANGE_INC]);
+            this.SendEvent(EVENTS.AS1000_PFD_RANGE_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_RANGE_DEC]);
+
+            //this.SendEvent(EVENTS.AS1000_PFD_JOYSTICK_RIGHT, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_JOYSTICK_RIGHT]);
+            //this.SendEvent(EVENTS.AS1000_PFD_JOYSTICK_LEFT, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_JOYSTICK_LEFT]);
+            //this.SendEvent(EVENTS.AS1000_PFD_JOYSTICK_UP, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_JOYSTICK_UP]);
+            //this.SendEvent(EVENTS.AS1000_PFD_JOYSTICK_DOWN, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_JOYSTICK_DOWN]);
+            //this.SendEvent(EVENTS.AS1000_PFD_JOYSTICK_PUSH, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_JOYSTICK_PUSH]);
+
+            this.SendEvent(EVENTS.AS1000_PFD_DIRECTTO, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_DIRECTTO]);
+            this.SendEvent(EVENTS.AS1000_PFD_ENT_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_ENT_Push]);
+            this.SendEvent(EVENTS.AS1000_PFD_CLR_Long, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CLR_Long]);
+            this.SendEvent(EVENTS.AS1000_PFD_CLR, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CLR]);
+            this.SendEvent(EVENTS.AS1000_PFD_MENU_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_MENU_Push]);
+            this.SendEvent(EVENTS.AS1000_PFD_FPL_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_FPL_Push]);
+            this.SendEvent(EVENTS.AS1000_PFD_PROC_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_PROC_Push]);
+
+            this.SendEvent(EVENTS.AS1000_PFD_FMS_Upper_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_FMS_Upper_INC]);
+            this.SendEvent(EVENTS.AS1000_PFD_FMS_Upper_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_FMS_Upper_DEC]);
+            this.SendEvent(EVENTS.AS1000_PFD_FMS_Upper_PUSH, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_FMS_Upper_PUSH]);
+            this.SendEvent(EVENTS.AS1000_PFD_FMS_Lower_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_FMS_Lower_INC]);
+            this.SendEvent(EVENTS.AS1000_PFD_FMS_Lower_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_FMS_Lower_DEC]);
+
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_1, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_1]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_2, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_2]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_3, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_3]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_4, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_4]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_5, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_5]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_6, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_6]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_7, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_7]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_8, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_8]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_9, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_9]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_10, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_10]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_11, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_11]);
+            this.SendEvent(EVENTS.AS1000_MFD_SOFTKEYS_12, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_SOFTKEYS_12]);
+
+            this.SendEvent(EVENTS.AS1000_PFD_CRS_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CRS_INC]);
+            this.SendEvent(EVENTS.AS1000_PFD_CRS_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CRS_DEC]);
+            this.SendEvent(EVENTS.AS1000_PFD_CRS_PUSH, MsfsData.Instance.bindings[BindingKeys.AS1000_PFD_CRS_PUSH]);
+            this.SendEvent(EVENTS.AS1000_MFD_RANGE_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_RANGE_INC]);
+            this.SendEvent(EVENTS.AS1000_MFD_RANGE_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_RANGE_DEC]);
+
+            this.SendEvent(EVENTS.AS1000_MFD_DIRECTTO, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_DIRECTTO]);
+            this.SendEvent(EVENTS.AS1000_MFD_ENT_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_ENT_Push]);
+            this.SendEvent(EVENTS.AS1000_MFD_CLR_Long, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_CLR_Long]);
+            this.SendEvent(EVENTS.AS1000_MFD_CLR, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_CLR]);
+            this.SendEvent(EVENTS.AS1000_MFD_MENU_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_MENU_Push]);
+            this.SendEvent(EVENTS.AS1000_MFD_FPL_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_FPL_Push]);
+            this.SendEvent(EVENTS.AS1000_MFD_PROC_Push, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_PROC_Push]);
+
+            this.SendEvent(EVENTS.AS1000_MFD_FMS_Upper_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_FMS_Upper_INC]);
+            this.SendEvent(EVENTS.AS1000_MFD_FMS_Upper_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_FMS_Upper_DEC]);
+            this.SendEvent(EVENTS.AS1000_MFD_FMS_Upper_PUSH, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_FMS_Upper_PUSH]);
+            this.SendEvent(EVENTS.AS1000_MFD_FMS_Lower_INC, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_FMS_Lower_INC]);
+            this.SendEvent(EVENTS.AS1000_MFD_FMS_Lower_DEC, MsfsData.Instance.bindings[BindingKeys.AS1000_MFD_FMS_Lower_DEC]);
+
 
             if (MsfsData.Instance.bindings[BindingKeys.PUSHBACK_CONTROLLER].ControllerChanged)
             {
@@ -634,8 +799,6 @@
             MsfsData.Instance.Changed();
         }
 
-
-
         private void SendEvent(EVENTS eventName, Binding binding, Boolean enumerable = false)
         {
             if (binding.ControllerChanged)
@@ -688,15 +851,16 @@
                 Debug.WriteLine("Send " + eventName + " with " + value);
                 if (enumerable)
                 {
-                    for (UInt32 i=1;i< 10; i++)
+                    for (UInt32 i = 1; i < 10; i++)
                     {
                         this.m_oSimConnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, eventName, i, hSimconnect.group1, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
                     }
-                } else
+                }
+                else
                 {
                     this.m_oSimConnect.TransmitClientEvent(SimConnect.SIMCONNECT_OBJECT_ID_USER, eventName, value, hSimconnect.group1, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
                 }
-                
+
                 binding.ResetController();
             }
         }
@@ -826,15 +990,26 @@
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Readers, "NAV AVAILABLE:2", "Boolean", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Readers, "NAV STANDBY FREQUENCY:1", "Hz", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Readers, "NAV STANDBY FREQUENCY:2", "Hz", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-            
-            
+
+            this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Readers, "GPS OBS VALUE", "degrees", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Readers, "NAV OBS:1", "degrees", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+            this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Readers, "NAV OBS:2", "degrees", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Writers, "GENERAL ENG MIXTURE LEVER POSITION:1", "Percent", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Writers, "GENERAL ENG MIXTURE LEVER POSITION:2", "Percent", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Writers, "GENERAL ENG MIXTURE LEVER POSITION:3", "Percent", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
             this.m_oSimConnect.AddToDataDefinition(DEFINITIONS.Writers, "GENERAL ENG MIXTURE LEVER POSITION:4", "Percent", SIMCONNECT_DATATYPE.INT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
-            foreach (EVENTS evt in Enum.GetValues(typeof(EVENTS))) {
-                this.m_oSimConnect.MapClientEventToSimEvent(evt, evt.ToString());
+            foreach (EVENTS evt in Enum.GetValues(typeof(EVENTS)))
+            {
+                var eventName = evt.ToString();
+
+                if ((Int32)evt >= MOBI_FLIGHT_INDEX)
+                {
+                    eventName = "MobiFlight." + eventName;
+                }
+
+                this.m_oSimConnect.MapClientEventToSimEvent(evt, eventName);
             }
 
             this.m_oSimConnect.RegisterDataDefineStruct<Readers>(DEFINITIONS.Readers);
@@ -866,6 +1041,31 @@
             {
                 MsfsData.Instance.bindings[BindingKeys.AUTO_TAXI].SetMsfsValue(0);
             }
+        }
+
+        internal void IncrPfdCourseBUG() => this.SendEvent(EVENTS.AS1000_PFD_CRS_INC);
+        internal void DecrPfdCourseBUG() => this.SendEvent(EVENTS.AS1000_PFD_CRS_DEC);
+        internal void IncrMfdCourseBUG() => this.SendEvent(EVENTS.AS1000_MFD_CRS_INC);
+        internal void DecrMfdCourseBUG() => this.SendEvent(EVENTS.AS1000_MFD_CRS_DEC);
+
+
+        internal void IncrPfdFmsLowerBUG() => this.SendEvent(EVENTS.AS1000_PFD_FMS_Lower_INC);
+        internal void DecrPfdFmsLowerBUG() => this.SendEvent(EVENTS.AS1000_PFD_FMS_Lower_DEC);
+        internal void IncrPfdFmsUpperBUG() => this.SendEvent(EVENTS.AS1000_PFD_FMS_Upper_INC);
+        internal void DecrPfdFmsUpperBUG() => this.SendEvent(EVENTS.AS1000_PFD_FMS_Upper_DEC);
+        internal void IncrMfdFmsLowerBUG() => this.SendEvent(EVENTS.AS1000_MFD_FMS_Lower_INC);
+        internal void DecrMfdFmsLowerBUG() => this.SendEvent(EVENTS.AS1000_MFD_FMS_Lower_DEC);
+        internal void IncrMfdFmsUpperBUG() => this.SendEvent(EVENTS.AS1000_MFD_FMS_Upper_INC);
+        internal void DecrMfdFmsUpperBUG() => this.SendEvent(EVENTS.AS1000_MFD_FMS_Upper_DEC);
+
+        private void SendEvent(EVENTS evt)
+        {
+            this.m_oSimConnect.TransmitClientEvent(
+                            SimConnect.SIMCONNECT_OBJECT_ID_USER,
+                            evt,
+                            1,
+                            hSimconnect.group1,
+                            SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
         }
     }
 }

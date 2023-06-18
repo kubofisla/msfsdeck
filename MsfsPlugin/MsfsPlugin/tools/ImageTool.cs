@@ -22,8 +22,27 @@
 
         public static BitmapImage _imageTrying = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.trying.png");
 
+        public static BitmapImage _imageTryingFull = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.tryingFull.png");
+        
+        public static BitmapImage _imageDisconnectFull = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.disconnectFull.png");
+
+        public static BitmapImage _imageButton = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.offBorder.png");
+
+        public static BitmapImage _imageButtonArrow = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.buttonArrow.png");
+
+        public static BitmapImage _imageDirectTo = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.directTo.png");
+
+        public static BitmapImage _imageLowerEncoder = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.lowerEncoder.png");
+
+        public static BitmapImage _imageUpperEncoder = EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.upperEncoder.png");
+
         public static BitmapImage GetOnOffImage(Int64 value) => ImageTool.IsConnected() ? value == 1 ? _imageOn : _imageOff : ImageTool.IsTryingToConnect() ? _imageTrying : _imageDisconnect;
         public static BitmapImage GetAvailableDisableImage(Int64 value) => ImageTool.IsConnected() ? value == 1 ? _imageAvailableBorder : _imageDisableBorder : ImageTool.IsTryingToConnect() ? _imageTrying : _imageDisconnect;
+        public static BitmapImage GetButtonArrowImage() => ImageTool.IsConnected() ? _imageButtonArrow : ImageTool.IsTryingToConnect() ? _imageTryingFull : _imageDisconnectFull;
+        public static BitmapImage GetButtonImage() => ImageTool.IsConnected() ? _imageButton: ImageTool.IsTryingToConnect() ? _imageTryingFull : _imageDisconnectFull;
+        public static BitmapImage GetDirectToImage() => ImageTool.IsConnected() ? _imageDirectTo : ImageTool.IsTryingToConnect() ? _imageTryingFull : _imageDisconnectFull;
+        public static BitmapImage GetLowerEncoder() => _imageLowerEncoder;
+        public static BitmapImage GetUpperEncoder() => _imageUpperEncoder;
 
         public static BitmapImage GetOnAvailableWaitDisableImage(Int64 value)
         {
@@ -70,5 +89,6 @@
             _imageDisconnect = MsfsData.Instance.bindings[BindingKeys.CONNECTION].ControllerValue == 1 ? EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.disconnectFull.png") : EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.disconnect.png");
             _imageTrying = MsfsData.Instance.bindings[BindingKeys.CONNECTION].ControllerValue == 1 ? EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.tryingFull.png") : EmbeddedResources.ReadImage("Loupedeck.MsfsPlugin.Resources.trying.png");
         }
-}
+
+    }
 }

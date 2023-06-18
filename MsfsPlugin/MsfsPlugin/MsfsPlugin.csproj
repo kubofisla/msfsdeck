@@ -60,8 +60,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="encoder\AS1000CRSEncoder.cs" />
+    <Compile Include="encoder\AS1000RangeEncoder.cs" />
+    <Compile Include="encoder\NavigationEncoder.cs" />
     <Compile Include="encoder\SimRateEncoder.cs" />
     <Compile Include="encoder\BarometerEncoder.cs" />
+    <Compile Include="encoder\AS1000FMSEncoder.cs" />
     <Compile Include="encoder\VSpeedAPEncoder.cs" />
     <Compile Include="encoder\SpeedAPEncoder.cs" />
     <Compile Include="encoder\HeadignAPEncoder.cs" />
@@ -87,6 +91,7 @@
     <Compile Include="folder\ComDynamicFolder.cs" />
     <Compile Include="folder\LightsDynamicFolder.cs" />
     <Compile Include="input\ap\APMultiInputs.cs" />
+    <Compile Include="input\AS1000\AS1000MultiInputs.cs" />
     <Compile Include="input\debug\SimCnxStateInput.cs" />
     <Compile Include="input\debug\DebugInput.cs" />
     <Compile Include="input\debug\AircraftInput.cs" />
@@ -199,6 +204,17 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\availableBorder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\buttonArrow.png" />
+    <EmbeddedResource Include="Resources\offBorder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\directTo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\upperEncoder.png" />
+    <EmbeddedResource Include="Resources\lowerEncoder.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

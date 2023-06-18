@@ -14,6 +14,14 @@
         protected Int32 step;
         protected readonly List<Binding> _bindings = new List<Binding>();
 
+        public DefaultEncoder (Boolean resettable, Int32 min, Int32 max, Int32 step) : base(resettable)
+        {
+            this.min = min;
+            this.max = max;
+            this.step = step;
+            MsfsData.Instance.Register(this);
+        }
+
         public DefaultEncoder(String name, String desc, String category, Boolean resettable, Int32 min, Int32 max, Int32 step) : base(name, desc, category, resettable)
         {
             this.min = min;

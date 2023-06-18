@@ -86,7 +86,7 @@
                     bitmapBuilder.SetBackgroundImage(ImageTool.GetOnOffImage(this._bindings[12].ControllerValue));
                     break;
             }
-            bitmapBuilder.DrawText(actionParameter);
+            bitmapBuilder.DrawText(actionParameter.Substring(3));
             return bitmapBuilder.ToImage();
         }
 
